@@ -140,7 +140,11 @@ $(function() {
         /* Ensures the error message is shown when loading an undefined feed id.
          */
         beforeEach(function(done){
+            // Backup the original google.feeds.Feed 
             originalFeedCreation = google.feeds.Feed;
+
+            // Create a spy function to fake the execution of google.feeds.Feed
+            // The fake one will always load error
             google.feeds.Feed = jasmine.createSpy("google.feeds.Feed() spy").and.callFake(function(){
                 return {
                     load: function(cb) {
@@ -159,6 +163,7 @@ $(function() {
          });
 
         afterEach(function(done){
+            // Restore the google.feeds.Feed function
             google.feeds.Feed = originalFeedCreation;
             done();
         });
