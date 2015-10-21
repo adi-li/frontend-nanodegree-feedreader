@@ -27,46 +27,145 @@ $(function() {
         });
 
 
-        /* TODO: Write a test that loops through each feed
+        /* Loops through each feed
          * in the allFeeds object and ensures it has a URL defined
          * and that the URL is not empty.
          */
+        it('have URL defined and not empty', function(){
+            allFeeds.forEach(function(feed){
+                expect(feed.url).not.toBeFalsy();
+            });
+        });
 
 
-        /* TODO: Write a test that loops through each feed
+        /* Loop through each feed
          * in the allFeeds object and ensures it has a name defined
          * and that the name is not empty.
          */
+         it('have name defined and not empty', function(){
+            allFeeds.forEach(function(feed){
+                expect(feed.name).not.toBeFalsy();
+            });
+        });
     });
 
 
-    /* TODO: Write a new test suite named "The menu" */
-
-        /* TODO: Write a test that ensures the menu element is
+    /* Test suite about "The menu" */
+    describe('The menu', function() {
+        /* Ensures the menu element is
          * hidden by default. You'll have to analyze the HTML and
          * the CSS to determine how we're performing the
          * hiding/showing of the menu element.
          */
+        it('is hidden by default', function(){
+            expect($('.menu-hidden .menu').length).toBeGreaterThan(0);
+        });
 
-         /* TODO: Write a test that ensures the menu changes
+         /* Ensures the menu changes
           * visibility when the menu icon is clicked. This test
           * should have two expectations: does the menu display when
           * clicked and does it hide when clicked again.
           */
+        it('is toggled by clicking menu icon', function(){
+            var icon = $('.menu-icon-link');
+            icon.click();
+            expect($('.menu-hidden .menu').length).toBe(0);
+            icon.click();
+            expect($('.menu-hidden .menu').length).toBeGreaterThan(0);
+        });
+    });
 
-    /* TODO: Write a new test suite named "Initial Entries" */
-
-        /* TODO: Write a test that ensures when the loadFeed
+    /* Test suite about "Initial Entries" */
+    describe('Initial Entries', function() {
+        /* Ensures when the loadFeed
          * function is called and completes its work, there is at least
          * a single .entry element within the .feed container.
          * Remember, loadFeed() is asynchronous so this test wil require
          * the use of Jasmine's beforeEach and asynchronous done() function.
          */
+         beforeEach(function(done){
+            loadFeed(0, function(){
+                done();
+            });
+         });
 
-    /* TODO: Write a new test suite named "New Feed Selection"
+         it('is loaded from loadFeed function correctly', function(done){
+            expect($('.feed .entry').length).toBeGreaterThan(0);
+            done();
+         });
+    });
 
-        /* TODO: Write a test that ensures when a new feed is loaded
+    /* Test suite about "New Feed Selection" */
+    describe('New Feed Selection', function() {
+        var oldContent;
+        /* Ensures when a new feed is loaded
          * by the loadFeed function that the content actually changes.
          * Remember, loadFeed() is asynchronous.
          */
+        beforeEach(function(done){
+            loadFeed(0, function(){
+                oldContent = $('.feed').html();
+                loadFeed(1, function(){
+                    done();
+                }); 
+            });
+         });
+
+        it('changes the old feed content', function(done){
+            var newContent = $('.feed').html();
+            expect(oldContent == newContent).toBeFalsy();
+            done();
+        });
+     });
+
+    /* Test suite about "Load Undefined Feed" */
+    describe('Load Undefined Feed', function() {
+        /* Ensures the error message is shown when loading an undefined feed id.
+         */
+        beforeEach(function(done){
+            loadFeed(-1, function(){
+                done();
+            });
+         });
+
+        it('is handled by showing error message', function(done){
+            expect($('.feed .error-message').length).toBeGreaterThan(0);
+            done();
+        });
+     });
+
+    /* Test suite about "Load Feed Error" */
+    describe('Load Feed Error', function() {
+        var originalFeedCreation;
+        /* Ensures the error message is shown when loading an undefined feed id.
+         */
+        beforeEach(function(done){
+            originalFeedCreation = google.feeds.Feed;
+            google.feeds.Feed = jasmine.createSpy("google.feeds.Feed() spy").and.callFake(function(){
+                return {
+                    load: function(cb) {
+                        if (cb) {
+                            cb({
+                                error: 'Load feed error.'
+                            });
+                        }
+                    }
+                };
+            });
+
+            loadFeed(0, function(){
+                done();
+            });
+         });
+
+        afterEach(function(done){
+            google.feeds.Feed = originalFeedCreation;
+            done();
+        });
+
+        it('is handled by showing error message', function(done){
+            expect($('.feed .error-message').length).toBeGreaterThan(0);
+            done();
+        });
+     });
 }());
